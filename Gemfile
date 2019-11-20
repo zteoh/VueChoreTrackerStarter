@@ -35,6 +35,8 @@ end
 gem 'validates_timeliness'
 gem 'will_paginate'
 gem "bcrypt"
+gem 'react-rails'
+gem 'rb-readline' # adding this to make sure rails console work
 
 # Gems used only in testing
 group :development, :test do
