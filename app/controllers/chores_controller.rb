@@ -1,5 +1,6 @@
 class ChoresController < ApplicationController
   before_action :set_chore, only: [:show, :edit, :update, :destroy]
+  skip_before_action :verify_authenticity_token
 
   # GET /chores
   # GET /chores.json
@@ -59,6 +60,7 @@ class ChoresController < ApplicationController
       format.html { redirect_to chores_url }
       format.json { head :no_content }
     end
+    print("DESTROYING")
   end
 
   private
@@ -69,6 +71,7 @@ class ChoresController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def chore_params
+      print(params)
       params.require(:chore).permit(:child_id, :task_id, :due_on, :completed)
     end
 end

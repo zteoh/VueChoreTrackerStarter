@@ -1,101 +1,170 @@
 import React from "react"
 import PropTypes from "prop-types"
+import NewChoreForm from './NewChoreForm';
+
 class Chores extends React.Component {
 
 	state = { 
 		chores: [],
-		tasks: []
+		tasks: [],
+		children: [],
+		modal_open: false,
+		error: ""
 	}
 
 	componentDidMount() {
-		console.log("in componentDidMount")
 		this.get_chores()
 		this.get_tasks()
 		this.get_children()
 	}
 
-	run_ajax = (link, callback=function(res){return}) => {
-		console.log("in run_ajax")
-		fetch(link)
-		.then(res => res.json())
+	handleErrors = (response) => {
+	    if (!response.ok && response.data) {
+	        throw Error(response.statusText);
+	    }
+	    return response.json;
+	}
+
+	run_ajax = (link, method="GET", data={}, callback = () => {this.get_chores()}) => {
+		let options
+		if (method == "GET") {
+			options = { method: method}
+		} else {
+			options = { 
+				method: method, 
+				body: JSON.stringify(data), 
+				headers: {
+				'Content-Type': 'application/json',
+				},
+				credentials: 'same-origin'
+			}
+		}
+		
+		fetch(link, options)
+		.then((response) => {
+			if (!response.ok) {
+		        throw (response);
+		    }
+		    return response.json();
+		})
 		.then(
 			(result) => {
 				callback(result);
-			},
-	        (error) => {
-	        	console.log("error!")
-	        }
-	    )
+			})
+		.catch((error) => {
+			if (error.statusText) {
+				this.setState({error: error})
+			}
+			callback(error);
+		})
 	}
 
 	get_chores = () => {
-		console.log("in get_chores!")
-		this.run_ajax('/chores.json', (res) => {this.setState({chores: res})});
+		this.run_ajax('/chores.json', 'GET', {}, (res) => {this.setState({chores: res})});
 	}
 
 	get_tasks = () => {
-        this.run_ajax('/tasks.json', (res) => {this.setState({tasks: res})});
-    }
+		this.run_ajax('/tasks.json', 'GET', {}, (res) => {this.setState({tasks: res})});
+	}
 
-    get_children = () => {
-        this.run_ajax('/children.json', (res) => {this.setState({children: res})});
-    }
+	get_children = () => {
+		this.run_ajax('/children.json', 'GET', {}, (res) => {this.setState({children: res})});
+	}
 
 	find_task_name = (chore) => {
 		var desired_id = chore.task_id;
 		const tasks = this.state.tasks
-        for (var task = 0; task < tasks.length; task += 1){
-            if (tasks[task]['id'] == desired_id){
-                return tasks[task]['name'];
-            }
-        }
-        return "No task"
+		for (var task = 0; task < tasks.length; task += 1){
+			if (tasks[task]['id'] == desired_id){
+				return tasks[task]['name'];
+			}
+		}
+		return "No task"
 	}
 
 	find_child_name = (chore) =>{
-	    var desired_id = chore.child_id;
-	    const children = this.state.children
-	    for (var child = 0; child < children.length; child += 1){
-	        if (children[child]['id'] == desired_id){
-	            return children[child]['first_name'].concat(' ', children[child]['last_name']);
-	        }
-	    }
-	    return "No name"
+		var desired_id = chore.child_id;
+		const children = this.state.children
+		for (var child = 0; child < children.length; child += 1){
+			if (children[child]['id'] == desired_id){
+				return children[child]['first_name'].concat(' ', children[child]['last_name']);
+			}
+		}
+		return "No name"
 	}
 
-	displayChores = () => {
+	toggle_complete = (chore) => {
+	    const updated_chore = {
+            child_id: chore.child_id,
+            task_id: chore.task_id,
+            due_on: chore.due_on,
+            completed: !chore.completed
+        }
+	    this.run_ajax('/chores/'.concat(chore.id, '.json'), 'PATCH', {chore: updated_chore});
+	  }
+
+	remove_record = (chore) => {
+	    this.run_ajax('/chores/'.concat(chore['id'], '.json'), 'DELETE', {chore: chore});       
+	  }
+
+	// Can probably refactor this into it's own component!
+	showChores = () => {
 		return this.state.chores.map((chore, index) => {
-	        // return <li key={index}>Chore ID: {value.id}</li>
 	        return (
-	        	<tr>
-		            <td width="125" align="left">{this.find_child_name(chore)}</td>
-		            <td width="200" align="left">{this.find_task_name(chore)}</td>
-		            <td width="75" align="center">{chore.due_on}</td>
-		            <td width="125" align="center">{chore.completed ? "True" : "False"}</td>
-		            <td></td>
-		        </tr>
-		    )
+	        	<tr key={index} >
+	        	<td width="125" align="left">{this.find_child_name(chore)}</td>
+	        	<td width="200" align="left">{this.find_task_name(chore)}</td>
+	        	<td width="75" align="center">{chore.due_on}</td>
+	        	<td width="125" align="center">{chore.completed ? "True" : "False"}</td>
+	        	<td width="50" onClick={() => this.toggle_complete(chore)}>Check</td>
+	        	<td width="50" onClick={() => this.remove_record(chore)}>Delete</td>
+	        	</tr>
+	        	)
 	    })
 	}
 
-	render () {
-		console.log("in render")
+	showChoreForm = () => {
 		return (
+			<div>
+			<NewChoreForm 
+			children={this.state.children}
+			tasks={this.state.tasks}
+			run_ajax={this.run_ajax}
+			switchModal={this.switchModal}
+			/>
+			</div>
+			)
+	}
+
+	switchModal = () => {
+		this.setState(prevState => ({
+			modal_open: !prevState.modal_open
+		}));
+	}
+
+	render () {
+		return (
+			<div>
 			<table>
-		        <tr>
-		            <th width="125" align="left">Child</th>
-		            <th width="200" align="left">Task</th>
-		            <th width="75">Due on</th>
-		            <th width="125">Completed</th>
-		            <th></th>
-		        </tr>
-			    { this.displayChores() }
+			<thead>
+			<tr>
+				<th width="125" align="left">Child</th>
+				<th width="200" align="left">Task</th>
+				<th width="75">Due on</th>
+				<th width="125">Completed</th>
+			</tr>
+			</thead>
+			<tbody>
+			{ this.showChores() }
+			</tbody>
 			</table>
+			<button onClick={this.switchModal} >New Chore</button>
+
+			{ this.state.modal_open ? this.showChoreForm() : null }
+			</div>
 			);
 	}
 }
 
-Chores.propTypes = {
-	myProp: PropTypes.string
-};
+
 export default Chores
