@@ -3,9 +3,10 @@
 # Part 1: Setup and Installation #
 
 1. Clone starter code
-2. In your gemfile, add: `gem 'react-rails'` and run `bundle install`
+2. In your gemfile, add: `gem 'react-rails'` and `gem 'webpacker'`
 3. Run 
     ```
+    bundle install
     rails webpacker:install
     rails webpacker:install:react 
     rails generate react:install
@@ -18,7 +19,7 @@
     create  app/javascript/packs/application.js
     create  app/javascript/packs/server_rendering.js
     ```
-4. Link the JavaScript pack in Rails view using `javascript_pack_tag` helper
+4. Link the JavaScript pack in Rails view by adding the following line in `application.html.erb`
     ```
     <%= javascript_pack_tag 'application' %>
     ```
@@ -27,12 +28,34 @@
     rails g react:component Chores
     ```
     This would create the `Chores.js` file in  `app/javascript/components`
-6. Connect the newly created `Chores` Component to your View (`app/views/chores/index.html`)
+6. Connect the newly created `Chores` Component to your View (`app/views/chores/index.html`) above the `<table>` tag.
     ```
     <%= react_component("Chores") %>
     ```
 
 TODO: Instructions about populating, using React developer tools, git commit and pain points.
+
+7. Run `rails db:migrate` and then go to `rails console` to load the testing contexts (for children, tasks, and chores) as some base data. Remember this can be done in rails console through first requiring needed modules:
+
+    ```
+    require 'factory_bot_rails'
+    require './test/contexts'
+    include Contexts
+    ```
+
+    and then including the contexts:
+
+    ```
+    create_children
+    create_tasks
+    create_chores
+    ```
+
+8. You should see some records added to your database. Once you have some records, run `rails server` and check to see Chore Tracker is running properly in your browser. Also check the javascript console in the browser and make sure there are no errors. Ask a TA if you are not sure how to open the javascript console in your browser.
+
+9. If you are using Google Chrome and have not done so, install the (React.JS DevTools)[https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en], as it allows for properly checking components and their state, in real-time.
+
+    Open the React DevTools and make sure that you are able to see the `Chores` component we just created.
 
 # Part 2: Displaying Chores #
 
@@ -78,11 +101,9 @@ TODO: Instructions about populating, using React developer tools, git commit and
 
 Create high level functions to obtain information about chores
 
-    ```
     get_chores = () => {
         this.run_ajax('/chores.json', 'GET', {}, (res) => {this.setState({chores: res})});
     }
-    ```
 
 4. Create function to make ajax requests
 
@@ -122,6 +143,8 @@ Create high level functions to obtain information about chores
     }
     ```
 
+    Now, refresh your application and make sure the `chores` state in the `Chores` component is populated with 7 chores.
+
 ## Populating the table
 
 5. Add the following code after the `</thead>` tag
@@ -155,6 +178,8 @@ Create high level functions to obtain information about chores
 
 8. Create high level functions to populate your `children` and `tasks` state. Remember to also add these high level functions to `componentDidMount()`
 
+    Check your React DevTools to make sure `tasks` and `children` are successfully populated.
+
 9. Now that we have all the `children`, we can map the `child_id` to the name of the child.
 
     ```
@@ -182,7 +207,7 @@ Create high level functions to obtain information about chores
 
 ## Toggling the `NewChoreForm`
 
-2. We want the `NewChoreForm` to appear only when we click on the `Add New Chore` Button. We can create a `modal_open` variable in our state and default it to false by adding the following line in the `state`
+2. We want the `NewChoreForm` to appear only when we click on the `Add New Chore` Button. We can create a `modal_open` variable in our state and default it to false by adding the following line in the `state` of the `Chores` component
     ```
     modal_open: false
     ```
@@ -215,6 +240,14 @@ Create high level functions to obtain information about chores
     We will also add the following line below the `<button>` tag which will call`showChoreForm` when `modal_open` is `true`.
     ```
     { this.state.modal_open ? this.showChoreForm() : null }
+    ```
+
+    Refresh the page and click on the `Add new chore` button. Did the application crash and give you the error `Uncaught ReferenceError: NewChoreForm is not defined`? This is because we need to import our `NewChorForm` component to the start of our `Chores` component!
+
+    Now, when you click on the `Add new chore` button, you would be able to toggle the `NewChoreForm` on the React DevTool.
+    
+    ```
+    import NewChoreForm from './NewChoreForm';
     ```
 
 ## Creating the New Chore Form
