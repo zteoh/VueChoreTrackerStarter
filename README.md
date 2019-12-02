@@ -1,16 +1,18 @@
-# ChoreTracker UX Improvements with Vue.JS #
+# ChoreTracker UX Improvements with React.js #
 
 # Part 1: Setup and Installation #
 
 1. Clone starter code
 2. In your gemfile, add: `gem 'react-rails'` and run `bundle install`
-3. run ```
+3. run 
+```
 rails webpacker:install
 rails webpacker:install:react 
 rails generate react:install
 ```
-This will add a series of files to the application
-```                                                                  
+
+This will add the following files to the application
+```
 create  app/javascript/components
 create  app/javascript/components/.keep
 create  app/javascript/packs/application.js
