@@ -2,16 +2,11 @@ import React from "react"
 import PropTypes from "prop-types"
 
 class NewChoreForm extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      value: 'coconut',
+  state = {
       child: this.props.children ? this.props.children[0] : null,
       task: this.props.tasks ? this.props.tasks[0] : null,
       due_on: '',
       completed: false
-    };
   }
 
   childrenOptions = () => {
@@ -29,10 +24,6 @@ class NewChoreForm extends React.Component {
         	<option value={index}> {task.name} </option>
 	    )
     })
-  }
-
-  handleChange = (event) => {
-    this.setState({value: event.target.value});
   }
 
   handleChildChange = (event) => {
@@ -64,7 +55,7 @@ class NewChoreForm extends React.Component {
   			<form onSubmit={this.handleSubmit}>
 		        <label>
 		          Child:
-		          <select value={this.state.value} onChange={this.handleChildChange}>
+		          <select onChange={this.handleChildChange}>
 		            { this.childrenOptions() }
 		          </select>
 		        </label>
@@ -72,7 +63,7 @@ class NewChoreForm extends React.Component {
 
 		        <label>
 		          Task:
-		          <select value={this.state.value} onChange={this.handleTaskChange}>
+		          <select onChange={this.handleTaskChange}>
 		            { this.tasksOptions() }
 		          </select>
 		        </label>

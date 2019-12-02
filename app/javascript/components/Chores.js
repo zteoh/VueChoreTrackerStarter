@@ -18,13 +18,6 @@ class Chores extends React.Component {
 		this.get_children()
 	}
 
-	handleErrors = (response) => {
-	    if (!response.ok && response.data) {
-	        throw Error(response.statusText);
-	    }
-	    return response.json;
-	}
-
 	run_ajax = (link, method="GET", data={}, callback = () => {this.get_chores()}) => {
 		let options
 		if (method == "GET") {
@@ -104,8 +97,8 @@ class Chores extends React.Component {
 	  }
 
 	remove_record = (chore) => {
-	    this.run_ajax('/chores/'.concat(chore['id'], '.json'), 'DELETE', {chore: chore});       
-	  }
+		this.run_ajax('/chores/'.concat(chore['id'], '.json'), 'DELETE', {chore: chore});       
+	}
 
 	// Can probably refactor this into it's own component!
 	showChores = () => {
