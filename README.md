@@ -53,7 +53,7 @@ TODO: Instructions about populating, using React developer tools, git commit and
 
 8. You should see some records added to your database. Once you have some records, run `rails server` and check to see Chore Tracker is running properly in your browser. Also check the javascript console in the browser and make sure there are no errors. Ask a TA if you are not sure how to open the javascript console in your browser.
 
-9. If you are using Google Chrome and have not done so, install the (React.JS DevTools)[https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en], as it allows for properly checking components and their state, in real-time.
+9. If you are using Google Chrome and have not done so, install the [React.JS DevTools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en), as it allows for properly checking components and their state, in real-time.
 
     Open the React DevTools and make sure that you are able to see the `Chores` component we just created.
 
@@ -299,17 +299,18 @@ Create high level functions to obtain information about chores
       }
     ```
 
-8. Do the same for `task` and `due_on`. Hint: update the `render` method and handle the changes of the form.
+8. Do the same for `task` and `due_on`. Hint: you would need to (1) (possibly) create options, (2) add form inputs (3) add variables to the state and (4) deal with the change of form inputs. 
 
 ## Submitting the form
-9. Add the trigger by modifying the `<form>` tag
+9. Add the trigger by modifying the opening `<form>` tag
     ```
     <form onSubmit={this.handleSubmit}>
     ```
 
-10. Define the function
+10. Now, whenever we click on the `submit` button, the form will call the `handleSubmit` function. Define the function
     ```
     handleSubmit = (event) => {
+        event.preventDefault();
         const new_chore = {
                         child_id: this.state.child.id,
                         task_id: this.state.task.id,
@@ -321,12 +322,34 @@ Create high level functions to obtain information about chores
     }
     ```
 
+11. Try to submit your form on the web application! Does the console give you useful information about why it is failing? What about your terminal - what is the error message when the POST request is being made? 
+
+    ```
+    Started POST "/chores.json" for ::1 at 2019-12-04 23:44:10 -0500
+    Processing by ChoresController#create as JSON
+      Parameters: {"chore"=>{"child_id"=>1, "task_id"=>1, "due_on"=>"2019-12-17", "completed"=>false}}
+    Can't verify CSRF token authenticity.
+    Completed 500  in 2ms (ActiveRecord: 0.0ms)
+    ```
+
+    Cross Site Request Forgery is <TODO: Explain this and why it is needed - man in the middle attack maybe>
+
+    In order to solve this problem, head over to `application_controller.rb` and replace `protect_from_forgery with: :exception` with `protect_from_forgery with: :null_session`
+
+12. Now, try submitting your new chore form again.
+
 # Part 4: Completing and Deleting Chores #
 
 ## Toggling Completion of Chore
-1. Modify the `showChores` function by adding `onClick={() => this.toggle_complete(chore)}` in the `<td>` opening tag.
+1. Modify the `showChores` function in `Chores.js` by adding `onClick={() => this.toggle_complete(chore)}` in the `<td>` opening tag. You should get the following line of code:
 
-2. Define the `toggle_complete` function
+```
+<td width="50" onClick={() => this.toggle_complete(chore)}>Check</td>
+```
+
+Do you know why we need to use an anonymous function for onClick? Try `onClick = this.toggle_complete(chore)` later and see whether anything changes. Hint: investigate the `completed` property of chores in the React Dev Tools.
+
+2. Let's define the `toggle_complete` function
     ```
     toggle_complete = (chore) => {
         const updated_chore = {
@@ -338,6 +361,8 @@ Create high level functions to obtain information about chores
         this.run_ajax('/chores/'.concat(chore.id, '.json'), 'PATCH', {chore: updated_chore});
     }
     ```
+
+3. Try this out and make sure it works before moving on!
 
 ## Deleting a Chore
 3. Modify the `showChores` function by adding `onClick={() => this.remove_record(chore)}` in the `<td>` opening tag.
